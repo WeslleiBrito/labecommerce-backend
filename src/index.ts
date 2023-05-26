@@ -1,1 +1,3 @@
-console.log("Aplicativo inicializado!")
+import { users, products } from "./database";
+
+console.log(`Usuários: ${users}\nProdutos: ${products}`)
