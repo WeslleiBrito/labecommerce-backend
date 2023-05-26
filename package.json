@@ -1,0 +1,21 @@
+{
+  "name": "labecommerce-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WeslleiBrito/labecommerce-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WeslleiBrito/labecommerce-backend/issues"
+  },
+  "homepage": "https://github.com/WeslleiBrito/labecommerce-backend#readme"
+}
