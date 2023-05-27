@@ -1,6 +1,6 @@
 import { TUsers, TProducts } from "./types";
 
-export const users: TUsers[] = [
+export const users: { id: string, name: string, email: string, password: string, createdAt: string }[] = [
     {
         id: "u001",
         name: 'Fulano',
