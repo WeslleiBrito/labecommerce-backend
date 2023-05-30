@@ -1,4 +1,4 @@
-import { TUsers, TProducts } from "./types";
+import { TUsers, TProducts, TCreateUser } from "./types";
 
 export const users: TUsers[] = [
     {
@@ -36,3 +36,22 @@ export const products: TProducts[] = [
         imageUrl: "https://picsum.photos/seed/Monitor/400"
     }
 ]
+
+
+export const createUser = ({ name, email, password }: TCreateUser): void => {
+    const newId = String(Number(users[users.length - 1].id.slice(1)) + 1).padStart(3, "0")
+    users.push({
+        id: `u${newId}`,
+        name: name,
+        email: email,
+        password: password,
+        createdAt: `${new Date().toISOString()}`
+    })
+
+    console.log("Cadastro realizado com sucesso!")
+
+}
+
+export const getAllUsers = (): void => {
+    console.table(users)
+}
