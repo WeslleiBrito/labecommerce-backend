@@ -1,4 +1,4 @@
-import { TUsers, TProducts, TCreateUser } from "./types";
+import { TUsers, TProducts, TCreateUser, TCreateProduct } from "./types";
 
 export const users: TUsers[] = [
     {
@@ -54,4 +54,26 @@ export const createUser = ({ name, email, password }: TCreateUser): void => {
 
 export const getAllUsers = (): void => {
     console.table(users)
+}
+
+export const createProduct = ({ name, value, description, imageUrl }: TCreateProduct): void => {
+
+    const newId = String(Number(products[products.length - 1].id.slice(4)) + 1).padStart(3, "0")
+
+    products.push(
+        {
+            id: `prod${newId}`,
+            name: name,
+            price: value,
+            description: description,
+            imageUrl: imageUrl
+        }
+    )
+
+    console.log("Produto criado com sucesso!")
+
+}
+
+export const getAllProducts = (): void => {
+    console.table(products)
 }

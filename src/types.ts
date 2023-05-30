@@ -21,6 +21,13 @@ export type TCreateUser = {
     password: string
 }
 
+export type TCreateProduct = {
+    name: string,
+    value: number,
+    description: string,
+    imageUrl: string
+}
+
 
 
 
