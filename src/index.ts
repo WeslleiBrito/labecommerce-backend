@@ -1,5 +1,5 @@
 
-import { createProduct, createUser, getAllProducts, getAllUsers } from "./database";
+import { createProduct, createUser, getAllProducts, getAllUsers, searchProductsByName } from "./database";
 
 
 createUser({ name: "Manuel", email: "manuel@gmail.com", password: "newpassword123" })
@@ -13,3 +13,5 @@ createProduct({
 })
 
 getAllProducts()
+
+searchProductsByName("gamer")

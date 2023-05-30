@@ -77,3 +77,11 @@ export const createProduct = ({ name, value, description, imageUrl }: TCreatePro
 export const getAllProducts = (): void => {
     console.table(products)
 }
+
+export const searchProductsByName = (name: string): void => {
+    const resultSearch = products.filter((product) => {
+        return product.name.toLowerCase().includes(name.toLowerCase())
+    })
+
+    console.log(resultSearch)
+}
