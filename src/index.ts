@@ -1,17 +1,18 @@
+import express, { Request, Response } from 'express'
+import cors from 'cors'
 
-import { createProduct, createUser, getAllProducts, getAllUsers, searchProductsByName } from "./database";
+
+const app = express()
+
+app.use(express.json())
+
+app.use(cors())
 
 
-createUser({ name: "Manuel", email: "manuel@gmail.com", password: "newpassword123" })
-getAllUsers()
-
-createProduct({
-    name: "SSD Gamer",
-    value: 399.00,
-    description: "Acelere seu sistema com velocidades incríveis de leitura e gravação.",
-    imageUrl: "http//www.info.com/images/ssd-gamer"
+app.get('/ping', (req: Request, res: Response) => {
+    res.status(200).send("Pong!")
 })
 
-getAllProducts()
-
-searchProductsByName("gamer")
+app.listen(3003, () => {
+    console.log("Servidor rodando na porta 3003")
+})
