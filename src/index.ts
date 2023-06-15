@@ -153,11 +153,122 @@ app.post('/products', (req: Request, res: Response) => {
 })
 
 // Deletar um usuario
-app.delete('/users/id', (req: Request, res: Response) => {
-    const id = req.query.id
+app.delete('/users/:id', (req: Request, res: Response) => {
 
-    res.send(typeof (id))
 
+    try {
+        const id = req.params.id
+        const regexId = /^u\d{3}$/
+
+        if (!regexId.test(id)) {
+            res.status(400)
+            throw new Error(`Era esperado uma string seguindo o seguinte padrão: 'u001', 'u003', 'u023', 'u674'.`)
+        }
+
+        const indexUser = users.findIndex((user) => {
+            return user.id === id
+        })
+
+        if (!indexUser) {
+            users.splice(indexUser, 1)
+            res.send("Usuário excluido com sucesso!")
+        } else {
+            throw new Error(`O id informado não encontra-se em nossa base de dados!`)
+        }
+
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
+
+
+})
+
+// Deletar um produto
+
+app.delete('/products/:id', (req: Request, res: Response) => {
+
+    try {
+        const id = req.params.id
+        const regexId = /^prod\d{3}$/
+
+        if (!regexId.test(id)) {
+            res.status(400)
+            throw new Error(`Era esperado uma string seguindo o seguinte padrão: 'prod001', 'prod003', 'prod023', 'prod674'.`)
+        }
+
+        const indexProduct = products.findIndex((product) => {
+            return product.id === id
+        })
+
+        if (!indexProduct) {
+            res.status(400)
+            throw new Error(`O id informado não encontra-se em nosso banco de dados.`)
+        }
+        const name = products[indexProduct].name
+        products.splice(indexProduct, 1)
+
+        res.status(200).send(`O produto "${name}" foi excluido com sucesso!`)
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
+
+})
+
+// Editar um produto
+app.put('/products/:id', (req: Request, res: Response) => {
+
+    try {
+        const id = req.params.id
+        const { name, price, description, imageUrl } = req.body
+      
+
+        const regexId = /^prod\d{3}$/
+
+        if (!regexId.test(id)) {
+            res.status(400)
+            throw new Error(`Era esperado uma string seguindo o seguinte padrão: 'prod001', 'prod003', 'prod023', 'prod674'.`)
+        }
+
+        const indexProduct = products.findIndex((product) => {
+            return product.id === id
+        })
+
+        if (indexProduct < 0) {
+            res.status(400)
+            throw new Error(`O id informado não encontra-se em nosso banco de dados.`)
+        }
+
+        const currentItem = products[indexProduct]
+        
+        Object.entries({name, description, imageUrl}).map((item) => {
+            const [key, value] = item
+
+            if(value && typeof(value) !== "string"){
+                res.status(400)
+                throw new Error(`O parametro "${key}" espera receber uma "string" e foi enviado um valor do tipo "${typeof value}".`)
+            }else if(typeof(value) === "string" && value.length === 0) {
+                res.status(400)
+                throw new Error(`O parametro "${key}" não pode ser vazio".`)
+            }
+        })
+
+        if(price && isNaN(Number(price))){
+            res.status(400)
+            throw new Error(`O parametro "price" espera receber um "number" e foi enviado um valor do tipo "${typeof price}".`)
+        }
+
+        currentItem.name = name || currentItem.name
+        currentItem.price = price || currentItem.price
+        currentItem.description = description || currentItem.description
+        currentItem.imageUrl = imageUrl || currentItem.imageUrl
+
+        res.status(201).send(`Produto modificado com sucesso!`)
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
 })
 
 app.listen(3003, () => {
