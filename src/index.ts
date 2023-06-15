@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import { users, products } from './database'
 
 import cors from 'cors'
-import { TCreateUser, TProducts, TUsers } from './types'
+
 
 
 const app = express()
@@ -35,7 +35,6 @@ app.get('/products/search', (req: Request, res: Response) => {
     try {
         const filter = req.query.filter
 
-
         if (typeof (filter) === "string") {
 
             if (filter.length === 0) {
@@ -51,29 +50,6 @@ app.get('/products/search', (req: Request, res: Response) => {
         } else {
             res.status(200).send(products)
         }
-
-        /* if (filter) {
-
-            if (typeof (filter) === "string") {
-
-                if (filter.length < 0) {
-                    throw new Error("O valor do 'search' deve possuir pelo menos 1 caracter")
-                }
-            } else {
-                throw new Error("O valor do 'search' deve ser do tipo string")
-            }
-
-            res.send(
-                products.filter((product) => {
-                    return product.name.toLowerCase().includes(filter.toLowerCase())
-                })
-            )
-
-        } else {
-            res.status(200).send(products)
-        } */
-
-
     } catch (error: any) {
         res.status(400).send(error.message)
     }
@@ -173,6 +149,14 @@ app.post('/products', (req: Request, res: Response) => {
     } catch (error: any) {
         res.send(error.message)
     }
+
+})
+
+// Deletar um usuario
+app.delete('/users/id', (req: Request, res: Response) => {
+    const id = req.query.id
+
+    res.send(typeof (id))
 
 })
 
