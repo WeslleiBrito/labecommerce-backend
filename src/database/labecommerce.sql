@@ -194,3 +194,15 @@ VALUES (
     );
 
 SELECT * FROM purchases;
+
+UPDATE purchases SET total_price = 549.86 WHERE id = "pur003";
+
+SELECT
+    purchases.id as "ID compra",
+    users.id as "ID comprador",
+    users.name as "Nome comprador",
+    users.email as "Email",
+    purchases.total_price,
+    purchases.created_at
+FROM purchases
+    INNER JOIN users ON purchases.buyer = users.id;
