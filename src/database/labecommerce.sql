@@ -88,6 +88,34 @@ Venha conferir!",
         "https://www9.lunapic.com/do-not-link-here-use-hosting-instead/168726789335879521?48493303994"
     );
 
+INSERT INTO
+    products (
+        id,
+        name,
+        price,
+        description,
+        image_url
+    )
+VALUES (
+        "prod006",
+        "TECLADO USB GAMER KG-40BK C3TECH",
+        110.00,
+        "- Teclado Gamer C3Tech KG-40BK desenvolvido para otimizar o desempenho em jogos o teclado conta com teclas iluminadas.
+
+- Possui 107 teclas, padrão de teclas português ABNT2 Brasil com a tecla “ç”.
+
+- Backlight com iluminação de LEDs de fundo no teclado nas cores azul, vermelho e roxa facilitando o uso em ambientes pouco iluminados.
+
+- Interface USB 2.0 com taxa de transferência de 480 Mbps.
+
+- Cabo USB com comprimento de 1,40 metros.
+
+- Teclado com chassi de metal, para maior estabilidade e resistência.
+
+- Fácil instalação com função Plug and Play.",
+        "https://loja.ts2informatica.com.br/produto/TS2003005.html"
+    );
+
 -- Retorna todos os usuários cadastrados
 
 SELECT * FROM users;
@@ -208,3 +236,8 @@ SELECT
     purchases.created_at
 FROM purchases
     INNER JOIN users ON purchases.buyer = users.id;
+
+SELECT *
+FROM purchases_products
+    INNER JOIN products ON purchases_products.product_id = products.id
+    INNER JOIN purchases ON purchases_products.purchase_id = purchases.id;
