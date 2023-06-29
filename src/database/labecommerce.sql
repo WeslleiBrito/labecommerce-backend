@@ -1,4 +1,4 @@
--- Active: 1687865300366@@127.0.0.1@3306
+-- Active: 1688043260215@@127.0.0.1@3306
 
 CREATE TABLE
     IF NOT EXISTS users (
@@ -138,6 +138,8 @@ VALUES (
 
 -- Deletar um usuario por id
 
+SELECT * FROM products;
+
 DELETE FROM users WHERE id = 'u004';
 
 -- Deletar um produto com base em seu id
@@ -160,42 +162,42 @@ CREATE TABLE
         id TEXT PRIMARY KEY NOT NULL UNIQUE,
         buyer TEXT NOT NULL,
         total_price REAL NOT NULL,
-        created_at TEXT NOT NULL,
+        created_at TEXT DEFAULT(DATETIME()) NOT NULL,
         FOREIGN KEY (buyer) REFERENCES users(id)
     );
 
+DROP TABLE IF EXISTS purchases;
+
 INSERT INTO
-    purchases (
-        id,
-        buyer,
-        total_price,
-        created_at
-    )
-VALUES (
-        "pur001",
-        "u004",
-        560.00,
-        "2021-03-13"
-    ), (
-        "pur002",
-        "u001",
-        738.00,
-        "2019-05-28"
-    ), (
-        "pur003",
-        "u002",
-        53.90,
-        "2023-01-19"
-    ), (
-        "pur004",
-        "u003",
-        1639.19,
-        "2020-12-23"
-    );
+    purchases (id, buyer, total_price)
+VALUES ("pur001", "u004", 560.00), ("pur002", "u001", 738.00), ("pur003", "u002", 53.90), ("pur004", "u003", 1639.19);
+
+INSERT INTO
+    purchases (id, buyer, total_price)
+VALUES ("pur005", "u002", 619.39);
 
 SELECT * FROM purchases;
 
-UPDATE purchases SET total_price = 549.86 WHERE id = "pur003";
+UPDATE purchases SET total_price = 43144.2 WHERE id = "pur004";
+
+CREATE TABLE
+    IF NOT EXISTS purchases_products (
+        purchase_id TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        FOREIGN KEY(purchase_id) REFERENCES purchases(id),
+        FOREIGN KEY(product_id) REFERENCES products(id)
+    );
+
+INSERT INTO
+    purchases_products (
+        purchase_id,
+        product_id,
+        quantity
+    )
+VALUES ("pur004", "prod002", 4), ("pur004", "prod003", 6), ("pur004", "prod007", 2);
+
+SELECT * FROM purchases_products;
 
 SELECT
     purchases.id as "ID compra",
