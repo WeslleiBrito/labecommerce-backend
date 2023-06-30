@@ -1,5 +1,6 @@
--- Active: 1688043260215@@127.0.0.1@3306
+-- Active: 1688079209917@@127.0.0.1@3306
 
+-- ============================== CRIAÇÃO DA TABELA users ==============================
 CREATE TABLE
     IF NOT EXISTS users (
         id TEXT PRIMARY KEY NOT NULL UNIQUE,
@@ -9,6 +10,8 @@ CREATE TABLE
         create_at TEXT NOT NULL
     );
 
+DROP TABLE users;
+-- ============================== POPULANDO DADOS NA TABELA users ==============================
 INSERT INTO
     users (
         id,
@@ -37,6 +40,27 @@ VALUES (
         "2023-11-30"
     );
 
+INSERT INTO
+    users (
+        id,
+        name,
+        email,
+        password,
+        create_at
+    )
+VALUES (
+        "u004",
+        "Beatriz",
+        "bia.beatriz@hotmail.com",
+        "pas004",
+        "2021-11-15"
+    );
+
+-- ============================== EXIBIÇÃO DOS DADOS DA TABELA users ==============================
+
+SELECT * FROM users;
+
+-- ============================== CRIAÇÃO DA TABELA products ==============================
 CREATE TABLE
     IF NOT EXISTS products (
         id TEXT NOT NULL PRIMARY KEY UNIQUE,
@@ -46,6 +70,7 @@ CREATE TABLE
         image_url TEXT NOT NULL
     );
 
+-- ============================== POPULANDO DADOS NA TABELA products ==============================
 INSERT INTO
     products (
         id,
@@ -116,37 +141,14 @@ VALUES (
         "https://loja.ts2informatica.com.br/produto/TS2003005.html"
     );
 
--- Retorna todos os usuários cadastrados
 
-SELECT * FROM users;
-
--- Retorna todos os produtros cadastrados
+-- ============================== EXIBIÇÃO DOS DADOS DA TABELA products ==============================
 
 SELECT * FROM products;
 
--- Retorda todos os produtos que atendam a um nome especifico
-
+-- ============================== EXIBIÇÃO DE ITENS QUE ATENDAM A UMA DETERMINADA NOMENCLATURTA TABELA products ==============================
 SELECT * FROM products WHERE name LIKE "%gamer%";
 
--- Incluir um novo usuário
-
-INSERT INTO
-    users (
-        id,
-        name,
-        email,
-        password,
-        create_at
-    )
-VALUES (
-        "u004",
-        "Beatriz",
-        "bia.beatriz@hotmail.com",
-        "pas004",
-        "2021-11-15"
-    );
-
--- Incluir um novo produto
 
 INSERT INTO
     products (
@@ -192,9 +194,12 @@ CREATE TABLE
         total_price REAL NOT NULL,
         created_at TEXT DEFAULT(DATETIME()) NOT NULL,
         FOREIGN KEY (buyer) REFERENCES users(id)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
     );
 
 DROP TABLE IF EXISTS purchases;
+
 
 INSERT INTO
     purchases (id, buyer, total_price)
@@ -241,3 +246,13 @@ SELECT *
 FROM purchases_products
     INNER JOIN products ON purchases_products.product_id = products.id
     INNER JOIN purchases ON purchases_products.purchase_id = purchases.id;
+
+
+
+-------------------------------------------------------------------- teste -----------------------------------------------------------------------
+
+UPDATE users SET id = "u222" WHERE id = "u001";
+
+SELECT * FROM users;
+
+DROP TABLE users;
