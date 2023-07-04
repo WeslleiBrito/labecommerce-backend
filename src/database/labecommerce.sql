@@ -168,6 +168,9 @@ VALUES (
 
 SELECT * FROM products;
 
+SELECT * FROM users;
+UPDATE users SET id = "u009" WHERE id = "u002";
+
 DELETE FROM users WHERE id = 'u004';
 
 -- Deletar um produto com base em seu id
@@ -191,8 +194,10 @@ CREATE TABLE
         buyer TEXT NOT NULL,
         total_price REAL NOT NULL,
         created_at TEXT DEFAULT(DATETIME()) NOT NULL,
-        FOREIGN KEY (buyer) REFERENCES users(id)
+        FOREIGN KEY (buyer) REFERENCES users (id) --ON UPDATE CASCADE ON DELETE CASCADE
     );
+
+
 
 DROP TABLE IF EXISTS purchases;
 
@@ -214,7 +219,7 @@ CREATE TABLE
         product_id TEXT NOT NULL,
         quantity INTEGER NOT NULL,
         FOREIGN KEY(purchase_id) REFERENCES purchases(id),
-        FOREIGN KEY(product_id) REFERENCES products(id)
+        FOREIGN KEY(product_id) REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE
     );
 
 INSERT INTO
@@ -224,6 +229,8 @@ INSERT INTO
         quantity
     )
 VALUES ("pur004", "prod002", 4), ("pur004", "prod003", 6), ("pur004", "prod007", 2);
+
+
 
 SELECT * FROM purchases_products;
 

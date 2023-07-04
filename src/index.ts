@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import { users, products } from './database'
-
+import { db } from './database/knex'
 import cors from 'cors'
 
 
@@ -17,11 +17,13 @@ app.get('/ping', (req: Request, res: Response) => {
 })
 
 //Buscar todos os usuários
-app.get('/users', (req: Request, res: Response) => {
+app.get('/users', async (req: Request, res: Response) => {
 
     try {
 
-        res.status(200).send(users)
+        const result = await db.raw("SELECT * FROM users")
+
+        res.status(200).send(result)
 
     } catch (error) {
         res.status(500).send("Erro ao buscar os dados na base.")
@@ -30,26 +32,20 @@ app.get('/users', (req: Request, res: Response) => {
 })
 
 //Buscar todos os produtos ou um produto expecifico
-app.get('/products/search', (req: Request, res: Response) => {
+app.get('/products/search', async (req: Request, res: Response) => {
 
     try {
         const filter = req.query.filter
 
-        if (typeof (filter) === "string") {
-
-            if (filter.length === 0) {
-                throw new Error("O valor do 'filter' deve possuir pelo menos 1 caracter")
-            }
-
-            res.send(
-                products.filter((product) => {
-                    return product.name.toLowerCase().includes(filter.toLowerCase())
-                })
-            )
-
-        } else {
-            res.status(200).send(products)
+        if (typeof (filter) !== "string" || filter.length === 0) {
+            res.status(422)
+            throw new Error("Informe o valor válido para o filtro.")
         }
+
+        res.status(200).send(
+            await db.raw(`SELECT * FROM products WHERE LOWER(name) LIKE LOWER("%${filter}%");`)
+        )
+
     } catch (error: any) {
         res.status(400).send(error.message)
     }
@@ -222,7 +218,7 @@ app.put('/products/:id', (req: Request, res: Response) => {
     try {
         const id = req.params.id
         const { name, price, description, imageUrl } = req.body
-      
+
 
         const regexId = /^prod\d{3}$/
 
@@ -241,20 +237,20 @@ app.put('/products/:id', (req: Request, res: Response) => {
         }
 
         const currentItem = products[indexProduct]
-        
-        Object.entries({name, description, imageUrl}).map((item) => {
+
+        Object.entries({ name, description, imageUrl }).map((item) => {
             const [key, value] = item
 
-            if(value && typeof(value) !== "string"){
+            if (value && typeof (value) !== "string") {
                 res.status(400)
                 throw new Error(`O parametro "${key}" espera receber uma "string" e foi enviado um valor do tipo "${typeof value}".`)
-            }else if(typeof(value) === "string" && value.length === 0) {
+            } else if (typeof (value) === "string" && value.length === 0) {
                 res.status(400)
                 throw new Error(`O parametro "${key}" não pode ser vazio".`)
             }
         })
 
-        if(price && isNaN(Number(price))){
+        if (price && isNaN(Number(price))) {
             res.status(400)
             throw new Error(`O parametro "price" espera receber um "number" e foi enviado um valor do tipo "${typeof price}".`)
         }
