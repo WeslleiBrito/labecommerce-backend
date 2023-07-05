@@ -1,13 +1,15 @@
--- Active: 1688043260215@@127.0.0.1@3306
+-- Active: 1688079209917@@127.0.0.1@3306
 
 CREATE TABLE
     IF NOT EXISTS users (
         id TEXT PRIMARY KEY NOT NULL UNIQUE,
         name TEXT NOT NULL,
-        email TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        create_at TEXT NOT NULL
+        create_at TEXT DEFAULT(DATETIME()) NOT NULL
     );
+
+DROP TABLE IF EXISTS products;
 
 INSERT INTO
     users (
@@ -40,7 +42,7 @@ VALUES (
 CREATE TABLE
     IF NOT EXISTS products (
         id TEXT NOT NULL PRIMARY KEY UNIQUE,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         price REAL NOT NULL,
         description TEXT NOT NULL,
         image_url TEXT NOT NULL

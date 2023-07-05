@@ -3,8 +3,6 @@ import { users, products } from './database'
 import { db } from './database/knex'
 import cors from 'cors'
 
-
-
 const app = express()
 
 app.use(express.json())
@@ -32,19 +30,28 @@ app.get('/users', async (req: Request, res: Response) => {
 })
 
 //Buscar todos os produtos ou um produto expecifico
-app.get('/products/search', async (req: Request, res: Response) => {
+app.get('/products', async (req: Request, res: Response) => {
 
     try {
-        const filter = req.query.filter
+        const name = req.query.name
 
-        if (typeof (filter) !== "string" || filter.length === 0) {
-            res.status(422)
-            throw new Error("Informe o valor válido para o filtro.")
+        if(typeof(name) !== "undefined"){
+
+            if(name.length === 0){
+                res.status(422)
+                throw new Error("Informe o valor válido para o nome.")
+            }
+
+            const result = await db.raw(`SELECT * FROM products WHERE LOWER(name) LIKE LOWER('%${name}%');`)
+
+            res.status(200).send(result)
+
+        }else{
+
+            const result = await db.raw(`SELECT * FROM products`)
+            res.status(200).send(result)
         }
-
-        res.status(200).send(
-            await db.raw(`SELECT * FROM products WHERE LOWER(name) LIKE LOWER("%${filter}%");`)
-        )
+        
 
     } catch (error: any) {
         res.status(400).send(error.message)
@@ -54,7 +61,7 @@ app.get('/products/search', async (req: Request, res: Response) => {
 })
 
 //Criar um novo usuário 
-app.post('/users', (req: Request, res: Response) => {
+app.post('/users', async (req: Request, res: Response) => {
 
     try {
         const { id, name, email, password } = req.body
@@ -76,25 +83,29 @@ app.post('/users', (req: Request, res: Response) => {
             }
         })
 
-        if (!isNaN(name)) {
+
+        const idExist = await db.raw(`SELECT id FROM users WHERE id = "${id}";`)
+        const emailExist = await db.raw(`SELECT email FROM users WHERE email = "${email}";`)
+
+
+        if(idExist.length > 0){
             res.status(400)
-            throw new Error(`A propriedade "name" deve ser do tipo "string".`)
+            throw new Error("O id informado já encontra-se em nossa base de dados.")
         }
 
-        users.map((user) => {
+        if(emailExist.length > 0){
+            res.status(400)
+            throw new Error("O email informado já encontra-se em nossa base de dados.")
+        }
 
-            if (user.id === id) {
-                res.status(400)
-                throw new Error("O id informado já encontra-se em nossa base de dados.")
-            } else if (user.email === email) {
-                res.status(400)
-                throw new Error("O email informado já encontra-se em nossa base de dados.")
-            }
+        
+        db.raw(`INSERT INTO users (id, name, email, password) VALUES("${id}", "${name}", "${email}", "${password}");`).then(() => {
+            res.status(201).send(`${name}, seu cadastro foi realizado com sucesso!`)
+        }).catch((err) => {
+            res.status(500)
+            throw new Error("Tivemos um problema para finalizar seu cadastro, tente novamente. " + err)
         })
 
-        users.push(newUser)
-
-        res.status(201).send(`${name}, seu cadastro foi realizado com sucesso!`)
 
     } catch (error: any) {
         res.send(error.message)
@@ -104,49 +115,99 @@ app.post('/users', (req: Request, res: Response) => {
 })
 
 //Criar um novo produto
-app.post('/products', (req: Request, res: Response) => {
+app.post('/products', async (req: Request, res: Response) => {
 
     try {
+
         const { id, name, price, description, imageUrl } = req.body
 
-        const newProduct = {
-            id,
-            name,
-            price,
-            description,
-            imageUrl
-        }
-
-        Object.entries(newProduct).map((item) => {
+        Object.entries({id, name, description, imageUrl}).map((item) => {
             const [key, value] = item
 
-            if (key !== "price" && typeof (value) !== "string") {
+            if (typeof (value) !== "string") {
                 res.status(400)
                 throw new Error(`A propriedade "${key}" deve ser do tipo "string" e valor informado é do tipo "${typeof value}".`)
             }
         })
+
 
         if (typeof (price) !== "number") {
             res.status(400)
             throw new Error(`A propriedade "price" deve ser do tipo "number".`)
         }
 
-        products.map((product) => {
 
-            if (product.id === id) {
-                res.status(400)
-                throw new Error("O id informado já encontra-se em nossa base de dados.")
-            }
-        })
-        products.push(newProduct)
+        const idExist = await db.raw(`SELECT id FROM products WHERE id = "${id}";`)
+        const nameExist = await db.raw(`SELECT name FROM products WHERE name = "${name}";`)
 
-        res.status(201).send(`O produto ${name}, foi cadastrado com sucesso!`)
+        if(idExist.length > 0){
+            res.status(400)
+            throw new Error(`O id '${id}', já consta em nossa base de dados.`)
+        }
+
+        if(nameExist.length > 0){
+            res.status(400)
+            throw new Error(`Já existe um produto com o nome '${name}' em nossa base de dados.`)
+        }
+
+
+        db.raw(`INSERT INTO products (id, name, price, description, image_url) VALUES ("${id}", "${name}", "${price}", "${description}", "${imageUrl}")`)
+            .then(() => {
+                res.status(201).send(`O produto ${name}, foi cadastrado com sucesso!`)
+            }).catch((err) => {
+                res.status(500)
+                throw new Error("Tivemos um problema para finalizar seu cadastro do seu produto, tente novamente. " + err)
+            })
+   
 
     } catch (error: any) {
         res.send(error.message)
     }
 
 })
+
+// Criar uma nova compra 
+app.post('/purchase',  async (req: Request, res: Response) => {
+
+    try {
+        const { id, buyer, totalPrice} = req.body
+
+        Object.entries({id, buyer}).map((item: Array<string>) => {
+            const [key, value] = item
+
+            if(typeof(value) !== "string"){
+                res.status(400)
+                throw new Error(`A propriedade '${key}' deve ser do tipo 'string', porém o valor recebido foi do tipo '${typeof(value)}'.`)
+            }
+        })
+
+        if(isNaN(totalPrice)){
+            res.status(400)
+            throw new Error(`A propriedade 'totalPrice' deve ser um valor numérico, porém o valor recebido foi '${typeof(totalPrice)}'.`)
+        }
+
+        const idExist = await db.raw(`SELECT id FROM purchases WHERE id = "${id}"`)
+
+        if(idExist.length > 0){
+            res.status(400)
+            throw new Error(`O id '${id}' já consta em nossa base de dados.`)
+        }
+
+        db.raw(`INSERT INTO purchases (id, buyer, total_price) VALUES ("${id}", "${buyer}", ${totalPrice});`).then(() => {
+
+            res.status(201).send("Compra cadastrada com sucesso")
+
+        }).catch((err) => {
+
+            res.status(500)
+            throw new Error("Tivemos um problema para finalizar seu cadastro da sua compra, tente novamente. " + err)
+        })
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
+})
+
 
 // Deletar um usuario
 app.delete('/users/:id', (req: Request, res: Response) => {
