@@ -338,7 +338,9 @@ app.get('/purchases/:id', async (req: Request, res: Response) => {
 
         const id = req.params.id
 
-        const result = await db('purchases').select(
+        //Busca todas as compras unindo com os dados do usuário
+
+        const purchases = await db('purchases').select(
             'purchases.id AS purchaseId',
             'users.id AS buyerId',
             'users.name AS buyerName',
@@ -352,12 +354,32 @@ app.get('/purchases/:id', async (req: Request, res: Response) => {
             'users.id'
         )
 
-        const [filter] = result.filter((purchase) => {
+        const [purchase] = purchases.filter((purchase) => {
             return purchase.purchaseId === id
         })
 
-        if (filter) {
-            res.status(200).send(filter)
+        // Faz a união dos dados dos produtos com as compras feitas
+        const products = await db('purchases_products').select(
+            'products.id',
+            'products.name',
+            'products.price',
+            'products.description',
+            'products.image_url AS imageUrl',
+            'purchases_products.quantity',
+            'purchases_products.purchase_id',
+        ).innerJoin(
+            'products',
+            'products.id',
+            '=',
+            'purchases_products. product_id',
+        ).where({ purchase_id: id })
+
+
+        if (purchase) {
+
+            purchase.products = products
+            res.status(200).send(purchase)
+
         } else {
             res.status(400)
             throw new Error(`O id '${id}' não consta em nossa base de dados!`)
