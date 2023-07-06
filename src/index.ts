@@ -338,10 +338,26 @@ app.get('/purchases/:id', async (req: Request, res: Response) => {
 
         const id = req.params.id
 
-        const [result] = await db('purchases').where({ id })
+        const result = await db('purchases').select(
+            'purchases.id AS purchaseId',
+            'users.id AS buyerId',
+            'users.name AS buyerName',
+            'users.email AS buyerEmail',
+            'purchases.total_price AS totalPrice',
+            'purchases.created_at AS createdAt'
+        ).innerJoin(
+            'users',
+            'purchases.buyer',
+            '=',
+            'users.id'
+        )
 
-        if (result) {
-            res.status(200).send(result)
+        const [filter] = result.filter((purchase) => {
+            return purchase.purchaseId === id
+        })
+
+        if (filter) {
+            res.status(200).send(filter)
         } else {
             res.status(400)
             throw new Error(`O id '${id}' não consta em nossa base de dados!`)
