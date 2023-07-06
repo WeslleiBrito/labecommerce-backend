@@ -14,51 +14,6 @@ app.get('/ping', (req: Request, res: Response) => {
     res.status(200).send("Pong!")
 })
 
-//Buscar todos os usuários
-app.get('/users', async (req: Request, res: Response) => {
-
-    try {
-
-        const result = await db.raw("SELECT * FROM users")
-
-        res.status(200).send(result)
-
-    } catch (error) {
-        res.status(500).send("Erro ao buscar os dados na base.")
-    }
-
-})
-
-//Buscar todos os produtos ou um produto expecifico
-app.get('/products', async (req: Request, res: Response) => {
-
-    try {
-        const name = req.query.name
-
-        if(typeof(name) !== "undefined"){
-
-            if(name.length === 0){
-                res.status(422)
-                throw new Error("Informe o valor válido para o nome.")
-            }
-
-            const result = await db.raw(`SELECT * FROM products WHERE LOWER(name) LIKE LOWER('%${name}%');`)
-
-            res.status(200).send(result)
-
-        }else{
-
-            const result = await db.raw(`SELECT * FROM products`)
-            res.status(200).send(result)
-        }
-        
-
-    } catch (error: any) {
-        res.status(400).send(error.message)
-    }
-
-
-})
 
 //Criar um novo usuário 
 app.post('/users', async (req: Request, res: Response) => {
@@ -88,17 +43,17 @@ app.post('/users', async (req: Request, res: Response) => {
         const emailExist = await db.raw(`SELECT email FROM users WHERE email = "${email}";`)
 
 
-        if(idExist.length > 0){
+        if (idExist.length > 0) {
             res.status(400)
             throw new Error("O id informado já encontra-se em nossa base de dados.")
         }
 
-        if(emailExist.length > 0){
+        if (emailExist.length > 0) {
             res.status(400)
             throw new Error("O email informado já encontra-se em nossa base de dados.")
         }
 
-        
+
         db.raw(`INSERT INTO users (id, name, email, password) VALUES("${id}", "${name}", "${email}", "${password}");`).then(() => {
             res.status(201).send(`${name}, seu cadastro foi realizado com sucesso!`)
         }).catch((err) => {
@@ -114,6 +69,21 @@ app.post('/users', async (req: Request, res: Response) => {
 
 })
 
+//Buscar todos os usuários
+app.get('/users', async (req: Request, res: Response) => {
+
+    try {
+
+        const result = await db.raw("SELECT * FROM users")
+
+        res.status(200).send(result)
+
+    } catch (error) {
+        res.status(500).send("Erro ao buscar os dados na base.")
+    }
+
+})
+
 //Criar um novo produto
 app.post('/products', async (req: Request, res: Response) => {
 
@@ -121,7 +91,7 @@ app.post('/products', async (req: Request, res: Response) => {
 
         const { id, name, price, description, imageUrl } = req.body
 
-        Object.entries({id, name, description, imageUrl}).map((item) => {
+        Object.entries({ id, name, description, imageUrl }).map((item) => {
             const [key, value] = item
 
             if (typeof (value) !== "string") {
@@ -140,12 +110,12 @@ app.post('/products', async (req: Request, res: Response) => {
         const idExist = await db.raw(`SELECT id FROM products WHERE id = "${id}";`)
         const nameExist = await db.raw(`SELECT name FROM products WHERE name = "${name}";`)
 
-        if(idExist.length > 0){
+        if (idExist.length > 0) {
             res.status(400)
             throw new Error(`O id '${id}', já consta em nossa base de dados.`)
         }
 
-        if(nameExist.length > 0){
+        if (nameExist.length > 0) {
             res.status(400)
             throw new Error(`Já existe um produto com o nome '${name}' em nossa base de dados.`)
         }
@@ -158,7 +128,7 @@ app.post('/products', async (req: Request, res: Response) => {
                 res.status(500)
                 throw new Error("Tivemos um problema para finalizar seu cadastro do seu produto, tente novamente. " + err)
             })
-   
+
 
     } catch (error: any) {
         res.send(error.message)
@@ -166,29 +136,87 @@ app.post('/products', async (req: Request, res: Response) => {
 
 })
 
-// Criar uma nova compra 
-app.post('/purchase',  async (req: Request, res: Response) => {
+//Buscar produto pelo id
+app.get('/products/:id', async (req: Request, res: Response) => {
 
     try {
-        const { id, buyer, totalPrice} = req.body
 
-        Object.entries({id, buyer}).map((item: Array<string>) => {
+        const id = req.params.id
+
+        if (id.length < 1) {
+            res.status(400)
+            throw new Error(`Informe o id do produto a ser localizado`)
+        }
+
+        const result = await db.raw(`SELECT * FROM products WHERE id = "${id}"`)
+
+        if (result.length < 1) {
+            res.status(404)
+            throw new Error(`O id informado não consta em nossa base de dados.`)
+        }
+
+        res.status(200).send(result)
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
+
+})
+
+//Buscar todos os produtos ou um produto expecifico
+app.get('/products', async (req: Request, res: Response) => {
+
+    try {
+        const name = req.query.name
+
+        if (typeof (name) !== "undefined") {
+
+            if (name.length === 0) {
+                res.status(422)
+                throw new Error("Informe o valor válido para o nome.")
+            }
+
+            const result = await db.raw(`SELECT * FROM products WHERE LOWER(name) LIKE LOWER('%${name}%');`)
+
+            res.status(200).send(result)
+
+        } else {
+
+            const result = await db.raw(`SELECT * FROM products`)
+            res.status(200).send(result)
+        }
+
+
+    } catch (error: any) {
+        res.status(400).send(error.message)
+    }
+
+
+})
+
+// Criar uma nova compra 
+app.post('/purchases', async (req: Request, res: Response) => {
+
+    try {
+        const { id, buyer, totalPrice } = req.body
+
+        Object.entries({ id, buyer }).map((item: Array<string>) => {
             const [key, value] = item
 
-            if(typeof(value) !== "string"){
+            if (typeof (value) !== "string") {
                 res.status(400)
-                throw new Error(`A propriedade '${key}' deve ser do tipo 'string', porém o valor recebido foi do tipo '${typeof(value)}'.`)
+                throw new Error(`A propriedade '${key}' deve ser do tipo 'string', porém o valor recebido foi do tipo '${typeof (value)}'.`)
             }
         })
 
-        if(isNaN(totalPrice)){
+        if (isNaN(totalPrice)) {
             res.status(400)
-            throw new Error(`A propriedade 'totalPrice' deve ser um valor numérico, porém o valor recebido foi '${typeof(totalPrice)}'.`)
+            throw new Error(`A propriedade 'totalPrice' deve ser um valor numérico, porém o valor recebido foi '${typeof (totalPrice)}'.`)
         }
 
         const idExist = await db.raw(`SELECT id FROM purchases WHERE id = "${id}"`)
 
-        if(idExist.length > 0){
+        if (idExist.length > 0) {
             res.status(400)
             throw new Error(`O id '${id}' já consta em nossa base de dados.`)
         }
@@ -200,7 +228,7 @@ app.post('/purchase',  async (req: Request, res: Response) => {
         }).catch((err) => {
 
             res.status(500)
-            throw new Error("Tivemos um problema para finalizar seu cadastro da sua compra, tente novamente. " + err)
+            throw new Error("Tivemos um problema para finalizar sua compra, tente novamente. " + err)
         })
 
     } catch (error: any) {
@@ -208,6 +236,29 @@ app.post('/purchase',  async (req: Request, res: Response) => {
     }
 })
 
+// Buscar uma compra pelo id
+app.get('/purchases/:id', async (req: Request, res: Response) => {
+
+    try {
+
+        const id = req.params.id
+
+        const [result] = await db.raw(
+            `SELECT * FROM purchases WHERE id = "${id}";`
+        )
+
+        if (result) {
+            res.status(200).send(result)
+        } else {
+            res.status(400)
+            throw new Error(`O id '${id}' não consta em nossa base de dados!`)
+        }
+
+    } catch (error: any) {
+        res.send(error.message)
+    }
+
+})
 
 // Deletar um usuario
 app.delete('/users/:id', (req: Request, res: Response) => {

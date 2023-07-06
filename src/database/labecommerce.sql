@@ -1,4 +1,4 @@
--- Active: 1688079209917@@127.0.0.1@3306
+-- Active: 1688043260215@@127.0.0.1@3306
 
 CREATE TABLE
     IF NOT EXISTS users (
@@ -171,6 +171,7 @@ VALUES (
 SELECT * FROM products;
 
 SELECT * FROM users;
+
 UPDATE users SET id = "u009" WHERE id = "u002";
 
 DELETE FROM users WHERE id = 'u004';
@@ -198,8 +199,6 @@ CREATE TABLE
         created_at TEXT DEFAULT(DATETIME()) NOT NULL,
         FOREIGN KEY (buyer) REFERENCES users (id) --ON UPDATE CASCADE ON DELETE CASCADE
     );
-
-
 
 DROP TABLE IF EXISTS purchases;
 
@@ -231,8 +230,6 @@ INSERT INTO
         quantity
     )
 VALUES ("pur004", "prod002", 4), ("pur004", "prod003", 6), ("pur004", "prod007", 2);
-
-
 
 SELECT * FROM purchases_products;
 
