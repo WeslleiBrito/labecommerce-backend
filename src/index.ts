@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express'
 import { db } from './database/knex'
 import cors from 'cors'
+import { TPurchase } from './types'
 
 
 const app = express()
@@ -289,7 +290,9 @@ app.put('/products/:id', async (req: Request, res: Response) => {
 app.post('/purchases', async (req: Request, res: Response) => {
 
     try {
-        const { id, buyer, totalPrice } = req.body
+
+        const { id, buyer, products } = req.body
+
 
         Object.entries({ id, buyer }).map((item: Array<string>) => {
             const [key, value] = item
@@ -300,7 +303,21 @@ app.post('/purchases', async (req: Request, res: Response) => {
             }
         })
 
-        if (isNaN(totalPrice)) {
+        if (Array.isArray(products) && products.length) {
+            products.map((product) => {
+
+                if (typeof (product) !== "object") {
+
+                }
+            })
+        } else {
+            res.status(400)
+            throw new Error("A propriedade 'products' deve ser um array não vazio, compos por objetos que possuam as seguintes propriedade: {id: string, quantity: number}.")
+        }
+
+        res.status(200).send(products)
+
+        /* if (isNaN(totalPrice)) {
             res.status(400)
             throw new Error(`A propriedade 'totalPrice' deve ser um valor numérico, porém o valor recebido foi '${typeof (totalPrice)}'.`)
         }
@@ -323,11 +340,11 @@ app.post('/purchases', async (req: Request, res: Response) => {
         }).catch((err) => {
             res.status(500)
             throw new Error("Tivemos um problema para finalizar sua compra, tente novamente. " + err)
-        })
+        }) */
 
 
     } catch (error: any) {
-        res.send(error.message)
+        res.json({ error: error.message })
     }
 })
 

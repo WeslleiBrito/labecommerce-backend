@@ -28,6 +28,12 @@ export type TCreateProduct = {
     imageUrl: string
 }
 
-
-
+export type TPurchase = {
+    id: string,
+    buyer: string,
+    products: Array<{
+        id: string,
+        quantity: number
+    }>
+}
 
