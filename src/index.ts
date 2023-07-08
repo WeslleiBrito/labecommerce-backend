@@ -286,13 +286,16 @@ app.put('/products/:id', async (req: Request, res: Response) => {
     }
 })
 
+
 // Criar uma nova compra 
 app.post('/purchases', async (req: Request, res: Response) => {
 
     try {
 
         const { id, buyer, products } = req.body
-
+        const regexIdPurchase = /^pur\d{3}$/
+        const regexIdBuyer = /^u\d{3}$/
+        const listProducts: Array<[any, any]> = []
 
         Object.entries({ id, buyer }).map((item: Array<string>) => {
             const [key, value] = item
@@ -303,19 +306,72 @@ app.post('/purchases', async (req: Request, res: Response) => {
             }
         })
 
-        if (Array.isArray(products) && products.length) {
-            products.map((product) => {
-
-                if (typeof (product) !== "object") {
-
-                }
-            })
-        } else {
+        if (!regexIdPurchase.test(id)) {
             res.status(400)
-            throw new Error("A propriedade 'products' deve ser um array não vazio, compos por objetos que possuam as seguintes propriedade: {id: string, quantity: number}.")
+            throw new Error(`O 'id' da compra precisa possuir o seguinte padrão: ['pur001', 'pur023', 'pur100'].`)
         }
 
-        res.status(200).send(products)
+        if (!regexIdBuyer.test(buyer)) {
+            res.status(400)
+            throw new Error(`O id do comprador precisa possuir o seguinte padrão: ['u001', 'u023', 'u100'].`)
+        }
+
+        if (Array.isArray(products) && products.length > 0) {
+
+            const regexIdProduct = /^prod\d{3}$/
+
+            products.map((product, index) => {
+
+                if (product.id) {
+                    if (typeof (product.id) !== "string") {
+                        res.status(404)
+                        throw new Error(`O 'id' deve ser do tipo texto. Verifique o produto na posição '${index}'.`)
+                    }
+
+                    if (product.id.length < 1) {
+                        res.status(400)
+                        throw new Error(`O 'id' não pode ser um valor vazio. Verifique o produto na posição '${index}'.`)
+                    }
+
+                    if (!regexIdProduct.test(product.id)) {
+                        res.status(400)
+                        throw new Error(`O 'id' precisa possuir o seguinte padrão: ['prod001', 'prod023', 'prod100']. Verifique o produto na posição '${index}'.`)
+                    }
+
+                } else {
+                    res.status(400)
+                    throw new Error(`A propriedade 'id' não existe no objeto 'product' na posição '${index}'.`)
+                }
+
+
+                if (product.quantity || product.quantity === 0) {
+
+                    if (typeof (product.quantity) !== "number") {
+                        res.status(400)
+                        throw new Error(`A propriedade 'quantity' deve ser um valor numérico inteito. Verifique o produto na posição '${index}'.`)
+                    }
+
+                    if (product.quantity < 1) {
+                        res.status(400)
+                        throw new Error(`A propriedade 'quantity' deve ser maior que zero. Verifique o produto na posição '${index}'.`)
+                    }
+
+                } else {
+                    res.status(400)
+                    throw new Error(`A propriedade 'quantity' não existe no objeto 'product' na posição '${index}'.`)
+                }
+
+                listProducts.push([product.id, product.quantity])
+            })
+
+        } else {
+            res.status(400)
+            throw new Error("A propriedade 'products' deve ser um array não vazio, composto por objetos que possuam as seguintes propriedades: {id: string, quantity: number}.")
+        }
+        let totalPrice = 0
+
+
+        res.status(200).send(listProducts)
 
         /* if (isNaN(totalPrice)) {
             res.status(400)
