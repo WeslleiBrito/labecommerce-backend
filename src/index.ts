@@ -297,7 +297,6 @@ app.post('/purchases', async (req: Request, res: Response) => {
         const regexIdBuyer = /^u\d{3}$/
         const listId: Array<string> = []
         const listQuantity: Array<number> = []
-        const idNotExistProducts: Array<{id: string, index: number}> = []
 
         Object.entries({ id, buyer }).map((item: Array<string>) => {
             const [key, value] = item
@@ -318,6 +317,13 @@ app.post('/purchases', async (req: Request, res: Response) => {
             throw new Error(`O id do comprador precisa possuir o seguinte padrão: ['u001', 'u023', 'u100'].`)
         }
 
+        const [userExist] = await db('users').where({id: buyer})
+
+        if(!userExist){
+            res.status(400)
+            throw new Error(`O usário informado não existe.`)
+        }
+        
         if (Array.isArray(products) && products.length > 0) {
 
             const regexIdProduct = /^prod\d{3}$/
@@ -415,7 +421,18 @@ app.post('/purchases', async (req: Request, res: Response) => {
                 buyer,
                 total_price: totalPrice
             }
-        ).then(() => {
+        ).then(async () => {
+
+            const insertValues = listId.map((idProduct, index) => {
+                return {
+                    purchase_id: id,
+                    product_id: idProduct,
+                    quantity: listQuantity[index]
+                }
+            })
+
+            await db('purchases_products').insert(insertValues)
+
             res.status(201).send("Compra cadastrada com sucesso")
         }).catch((err) => {
             res.status(500)
