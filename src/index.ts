@@ -295,7 +295,9 @@ app.post('/purchases', async (req: Request, res: Response) => {
         const { id, buyer, products } = req.body
         const regexIdPurchase = /^pur\d{3}$/
         const regexIdBuyer = /^u\d{3}$/
-        const listProducts: Array<[any, any]> = []
+        const listId: Array<string> = []
+        const listQuantity: Array<number> = []
+        const idNotExistProducts: Array<{id: string, index: number}> = []
 
         Object.entries({ id, buyer }).map((item: Array<string>) => {
             const [key, value] = item
@@ -320,7 +322,8 @@ app.post('/purchases', async (req: Request, res: Response) => {
 
             const regexIdProduct = /^prod\d{3}$/
 
-            products.map((product, index) => {
+            products.map( async (product, index) => {
+                const errro = false
 
                 if (product.id) {
                     if (typeof (product.id) !== "string") {
@@ -360,23 +363,44 @@ app.post('/purchases', async (req: Request, res: Response) => {
                     res.status(400)
                     throw new Error(`A propriedade 'quantity' não existe no objeto 'product' na posição '${index}'.`)
                 }
-
-                listProducts.push([product.id, product.quantity])
+                listId.push(product.id)
+                listQuantity.push(product.quantity)
             })
+
 
         } else {
             res.status(400)
             throw new Error("A propriedade 'products' deve ser um array não vazio, composto por objetos que possuam as seguintes propriedades: {id: string, quantity: number}.")
         }
-        let totalPrice = 0
+        const idsRemoved = [...listId]
+        
+        const validateIds = await db('products').whereIn('id', listId)
+      
+        if(validateIds.length < listId.length){
+            validateIds.map( async (item) => {
+                     
+                    if(listId.includes(item.id)){
+                         idsRemoved.splice(idsRemoved.indexOf(item.id), 1)
+                    }
+            })
 
-
-        res.status(200).send(listProducts)
-
-        /* if (isNaN(totalPrice)) {
-            res.status(400)
-            throw new Error(`A propriedade 'totalPrice' deve ser um valor numérico, porém o valor recebido foi '${typeof (totalPrice)}'.`)
+            if(idsRemoved.length > 0){
+                res.status(400)
+                throw new Error(`Os seguintes produtos não existem em nossa base de dados: '${JSON.stringify(idsRemoved)}'.`)
+            }
         }
+
+        const productsDb = (await db('products').select("id", "price")).map((item) => {
+            const index = listId.indexOf(item.id)
+
+            if(index !== -1){
+                return item.price * listQuantity[index]
+            }
+
+            return 0
+        })
+        
+        const totalPrice = productsDb.map(value => value).reduce((accumulator, currentVuleu) => accumulator + currentVuleu, 0)
 
         const [idExist] = await db('purchases').where({ id })
 
@@ -396,11 +420,11 @@ app.post('/purchases', async (req: Request, res: Response) => {
         }).catch((err) => {
             res.status(500)
             throw new Error("Tivemos um problema para finalizar sua compra, tente novamente. " + err)
-        }) */
-
+        })
 
     } catch (error: any) {
-        res.json({ error: error.message })
+        return res.json({ error: error.message })
+       
     }
 })
 
