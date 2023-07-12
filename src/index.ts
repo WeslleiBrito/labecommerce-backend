@@ -10,18 +10,12 @@ import { createPurchase } from './endpoints/createPurchase'
 import { deletePurchaseById } from './endpoints/deletePurchaseById'
 import { getPurchaseById } from './endpoints/getPurchaseById'
 
-
-
 const app = express()
 
 app.use(express.json())
 
 app.use(cors())
 
-
-app.get('/ping', (req: Request, res: Response) => {
-    res.status(200).send("Pong!")
-})
 
 //Get all users
 app.get('/users', getAllUsers)
