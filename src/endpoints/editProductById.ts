@@ -5,7 +5,7 @@ export const editProductById = async (req: Request, res: Response) => {
 
     try {
         const id = req.params.id
-        const { name, price, description, imageUrl } = req.body
+        const { newId, name, price, description, imageUrl } = req.body
 
 
         const regexId = /^prod\d{3}$/
@@ -33,11 +33,34 @@ export const editProductById = async (req: Request, res: Response) => {
             throw new Error(`O parametro "price" espera receber um "number" e foi enviado um valor do tipo "${typeof price}".`)
         }
 
+
+        if (newId) {
+
+            if (typeof (newId) !== "string") {
+                res.status(404)
+                throw new Error(`O 'newId' precisa ser do tipo texto.`)
+            }
+
+            if (!regexId.test(newId)) {
+                res.status(400)
+                throw new Error(`O novo 'id' deve seguir o seguinte padrão: 'prod001', 'prod003', 'prod023', 'prod674'.`)
+            }
+
+            const [newIdExist] = await db('products').where({ id: newId })
+
+            if (newIdExist) {
+                res.status(400)
+                throw new Error(`O novo 'id' informado já existe.`)
+            }
+        }
+
+
         const [productDb] = await db('products').where({ id })
 
         if (productDb) {
 
             const productEdited = {
+                id: newId || productDb.id,
                 name: name || productDb.name,
                 price: price || productDb.price,
                 description: description || productDb.description,
