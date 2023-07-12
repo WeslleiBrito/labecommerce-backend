@@ -6,7 +6,7 @@ CREATE TABLE
         name TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        create_at TEXT DEFAULT(DATETIME()) NOT NULL
+        created_at TEXT DEFAULT(DATETIME()) NOT NULL
     );
 
 DROP TABLE IF EXISTS products;
@@ -17,7 +17,7 @@ INSERT INTO
         name,
         email,
         password,
-        create_at
+        created_at
     )
 VALUES (
         "u001",
