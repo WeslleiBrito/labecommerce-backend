@@ -1,5 +1,4 @@
-import express, { Request, Response } from 'express'
-import { db } from './database/knex'
+import express from 'express'
 import cors from 'cors'
 import { createUser } from './endpoints/createUser'
 import { getAllUsers } from './endpoints/getAllUsers'
