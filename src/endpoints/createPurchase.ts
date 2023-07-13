@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../database/knex'
+import { TPurchase } from '../types'
 
 export const createPurchase = async (req: Request, res: Response) => {
 
@@ -30,19 +31,18 @@ export const createPurchase = async (req: Request, res: Response) => {
             throw new Error(`O id do comprador precisa possuir o seguinte padrão: ['u001', 'u023', 'u100'].`)
         }
 
-        const [userExist] = await db('users').where({id: buyer})
+        const [userExist] = await db('users').where({ id: buyer })
 
-        if(!userExist){
+        if (!userExist) {
             res.status(400)
             throw new Error(`O usário informado não existe.`)
         }
-        
+
         if (Array.isArray(products) && products.length > 0) {
 
             const regexIdProduct = /^prod\d{3}$/
 
-            products.map( async (product, index) => {
-                const errro = false
+            products.map(async (product, index) => {
 
                 if (product.id) {
                     if (typeof (product.id) !== "string") {
@@ -92,18 +92,18 @@ export const createPurchase = async (req: Request, res: Response) => {
             throw new Error("A propriedade 'products' deve ser um array não vazio, composto por objetos que possuam as seguintes propriedades: {id: string, quantity: number}.")
         }
         const idsRemoved = [...listId]
-        
+
         const validateIds = await db('products').whereIn('id', listId)
-      
-        if(validateIds.length < listId.length){
-            validateIds.map( async (item) => {
-                     
-                    if(listId.includes(item.id)){
-                         idsRemoved.splice(idsRemoved.indexOf(item.id), 1)
-                    }
+
+        if (validateIds.length < listId.length) {
+            validateIds.map(async (item) => {
+
+                if (listId.includes(item.id)) {
+                    idsRemoved.splice(idsRemoved.indexOf(item.id), 1)
+                }
             })
 
-            if(idsRemoved.length > 0){
+            if (idsRemoved.length > 0) {
                 res.status(400)
                 throw new Error(`Os seguintes produtos não existem em nossa base de dados: '${JSON.stringify(idsRemoved)}'.`)
             }
@@ -112,13 +112,13 @@ export const createPurchase = async (req: Request, res: Response) => {
         const productsDb = (await db('products').select("id", "price")).map((item) => {
             const index = listId.indexOf(item.id)
 
-            if(index !== -1){
+            if (index !== -1) {
                 return item.price * listQuantity[index]
             }
 
             return 0
         })
-        
+
         const totalPrice = productsDb.map(value => value).reduce((accumulator, currentVuleu) => accumulator + currentVuleu, 0)
 
         const [idExist] = await db('purchases').where({ id })
@@ -128,12 +128,13 @@ export const createPurchase = async (req: Request, res: Response) => {
             throw new Error(`O id '${id}' já consta em nossa base de dados.`)
         }
 
+        const newPurchase: TPurchase = {
+            id,
+            buyer,
+            total_price: totalPrice
+        }
         db('purchases').insert(
-            {
-                id,
-                buyer,
-                total_price: totalPrice
-            }
+            newPurchase
         ).then(async () => {
 
             const insertValues = listId.map((idProduct, index) => {
@@ -151,7 +152,7 @@ export const createPurchase = async (req: Request, res: Response) => {
                     message: "Pedido realizado com sucesso"
                 }
             )
-            
+
         }).catch((err) => {
             res.status(500)
             throw new Error("Tivemos um problema para finalizar sua compra, tente novamente. " + err)
@@ -159,6 +160,6 @@ export const createPurchase = async (req: Request, res: Response) => {
 
     } catch (error: any) {
         return res.json({ error: error.message })
-       
+
     }
 }

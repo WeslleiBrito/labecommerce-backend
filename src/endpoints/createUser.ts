@@ -1,12 +1,13 @@
 import { Request, Response } from 'express'
 import { db } from '../database/knex'
+import { TUser } from '../types'
 
 export const createUser = async (req: Request, res: Response) => {
 
     try {
         const { id, name, email, password } = req.body
 
-        const newUser = {
+        const newUser: TUser = {
             id,
             name,
             email,

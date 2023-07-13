@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../database/knex'
+import { TProducts } from '../types'
 
 export const createProduct = async (req: Request, res: Response) => {
 
@@ -36,14 +37,16 @@ export const createProduct = async (req: Request, res: Response) => {
             throw new Error(`Já existe um produto com o nome '${name}' em nossa base de dados.`)
         }
 
+        const newProduct: TProducts = {
+            id,
+            name,
+            price,
+            description,
+            image_url: imageUrl
+        }
+
         db('products').insert(
-            {
-                id,
-                name,
-                price,
-                description,
-                image_url: imageUrl
-            }
+            newProduct
         ).then(() => {
             res.status(201).json(
                 {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { db } from '../database/knex'
+import { TProducts } from '../types'
 
 export const editProductById = async (req: Request, res: Response) => {
 
@@ -59,7 +60,7 @@ export const editProductById = async (req: Request, res: Response) => {
 
         if (productDb) {
 
-            const productEdited = {
+            const productEdited: TProducts = {
                 id: newId || productDb.id,
                 name: name || productDb.name,
                 price: price || productDb.price,
