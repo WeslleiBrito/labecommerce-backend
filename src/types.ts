@@ -1,0 +1,22 @@
+
+export type TUser = {
+    id: string,
+    name: string,
+    email: string,
+    password: string
+}
+
+export type TProducts = {
+    id: string,
+    name: string,
+    price: number,
+    description: string,
+    image_url: string
+}
+
+
+export type TPurchase = {
+    id: string,
+    buyer: string,
+    total_price: number,
+}
